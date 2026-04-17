@@ -113,16 +113,15 @@ class VigiloClient:
         return []
 
     def get_message_threads(self, child_ids: list, page_size: int = 50) -> dict:
-        r = self._http.get(
-            "/api/message-threads",
-            params={
-                "userId": self._user_id,
-                "childIds": child_ids,
-                "pageSize": page_size,
-                "unreadMessageThreadsCountOnly": "false",
-                "includeAfterSchoolMessages": "false",
-            },
-        )
+        params = {
+            "userId": self._user_id,
+            "pageSize": page_size,
+            "unreadMessageThreadsCountOnly": "false",
+            "includeAfterSchoolMessages": "false",
+        }
+        if child_ids:
+            params["childIds"] = child_ids
+        r = self._http.get("/api/message-threads", params=params)
         r.raise_for_status()
         return r.json()
 
