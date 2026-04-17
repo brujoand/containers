@@ -1,0 +1,39 @@
+---
+name: Build vigilo-notify container
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - vigilo-notify/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        run: echo "version=$(cat vigilo-notify/VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: vigilo-notify
+          push: true
+          tags: |
+            ghcr.io/brujoand/vigilo-notify:${{ steps.version.outputs.version }}
+            ghcr.io/brujoand/vigilo-notify:latest
