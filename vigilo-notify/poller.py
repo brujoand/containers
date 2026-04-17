@@ -29,8 +29,10 @@ from pathlib import Path
 
 import httpx
 
-CLIENT_ID = "fc442667-55b1-4072-ad4d-937133874514.ANDROID"
-CLIENT_SECRET = "a08d178c-ff65-4e4b-9133-45fa9546438b"
+# Extracted from the Android APK (public app, not personal credentials).
+# Injected via VIGILO_CLIENT_ID / VIGILO_CLIENT_SECRET environment variables.
+CLIENT_ID = os.environ.get("VIGILO_CLIENT_ID", "")
+CLIENT_SECRET = os.environ.get("VIGILO_CLIENT_SECRET", "")
 AUTH_BASE = "https://auth.prod.vigilo-oas.no"
 API_BASE = "https://api-gw-parent-app.prod.vigilo-oas.no"
 APP_VERSION = "Android 3.1.4-15"
