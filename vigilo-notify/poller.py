@@ -103,7 +103,14 @@ class VigiloClient:
         r = self._http.get("/api/children", params={"userId": self._user_id})
         r.raise_for_status()
         data = r.json()
-        return data.get("items", data) if isinstance(data, dict) else data
+        print(f"DEBUG children response: {data}", file=sys.stderr)
+        if isinstance(data, list):
+            return data
+        # try common wrapper keys
+        for key in ("items", "children", "data", "result"):
+            if key in data and isinstance(data[key], list):
+                return data[key]
+        return []
 
     def get_message_threads(self, child_ids: list, page_size: int = 50) -> dict:
         r = self._http.get(
@@ -204,11 +211,12 @@ def main() -> None:
 
     try:
         children = client.get_children()
-        child_ids = [str(c.get("id") or c.get("personId", "")) for c in children]
-
-        if not child_ids:
-            print("No children found for this account.")
-            sys.exit(0)
+        child_ids = [
+            str(v) for c in children
+            for v in [c.get("id") or c.get("personId") or c.get("childId") or c.get("personid")]
+            if v
+        ]
+        print(f"DEBUG child_ids: {child_ids}", file=sys.stderr)
 
         threads_data = client.get_message_threads(child_ids)
         threads = threads_data.get("messageThreads", [])
