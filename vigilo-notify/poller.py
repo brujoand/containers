@@ -10,7 +10,7 @@ Environment variables required:
     VIGILO_ACCESS_TOKEN   - current OAuth access token
     VIGILO_REFRESH_TOKEN  - OAuth refresh token (persisted back to statefile)
     VIGILO_USER_ID        - Vigilo user ID (from bootstrap)
-    SMTP_HOST             - SMTP relay host (default: smtp-relay.automation.svc.cluster.local)
+    SMTP_HOST             - SMTP relay host (required)
     SMTP_PORT             - SMTP relay port (default: 25)
     SMTP_FROM             - sender address (default: post@brujordet.no)
     SMTP_TO               - recipient address
@@ -163,7 +163,7 @@ def format_email_body(thread: dict, messages: list) -> str:
 
 
 def main() -> None:
-    smtp_host = os.environ.get("SMTP_HOST", "smtp-relay.automation.svc.cluster.local")
+    smtp_host = os.environ.get("SMTP_HOST", "")
     smtp_port = int(os.environ.get("SMTP_PORT", "25"))
     smtp_from = os.environ.get("SMTP_FROM", "post@brujordet.no")
     smtp_to = os.environ.get("SMTP_TO", "")
@@ -171,6 +171,9 @@ def main() -> None:
     token_file = Path(os.environ.get("TOKEN_FILE", "/data/tokens.json"))
     user_id = os.environ.get("VIGILO_USER_ID", "")
 
+    if not smtp_host:
+        print("ERROR: SMTP_HOST not set", file=sys.stderr)
+        sys.exit(1)
     if not smtp_to:
         print("ERROR: SMTP_TO not set", file=sys.stderr)
         sys.exit(1)
@@ -191,7 +194,6 @@ def main() -> None:
             body = (
                 "The Vigilo refresh token has expired.\n\n"
                 "Please re-run the bootstrap script on your local machine:\n\n"
-                "  cd ~/src/gitops-homelab/services/vigilo-notify\n"
                 "  python bootstrap.py\n\n"
                 "This will open a browser for you to log in again."
             )
